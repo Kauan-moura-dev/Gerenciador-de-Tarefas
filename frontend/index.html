@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciador de Tarefas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <header class="cabecalho">
+      <h1>Minhas Tarefas</h1>
+      <p class="subtitulo">Organize seu dia a dia</p>
+    </header>
+
+    <!-- Formulário de cadastro -->
+    <section class="card">
+      <h2>Nova tarefa</h2>
+      <form id="form-tarefa">
+        <div class="campo">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" placeholder="Ex: Estudar para a prova" required />
+        </div>
+
+        <div class="campo">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" placeholder="Detalhes da tarefa (opcional)"></textarea>
+        </div>
+
+        <button type="submit" class="botao botao-primario">Adicionar tarefa</button>
+      </form>
+    </section>
+
+    <!-- Lista de tarefas -->
+    <section class="card">
+      <div class="lista-cabecalho">
+        <h2>Tarefas cadastradas</h2>
+
+        <div class="filtro">
+          <label for="filtro-status">Filtrar:</label>
+          <select id="filtro-status">
+            <option value="todas">Todas</option>
+            <option value="Pendente">Pendentes</option>
+            <option value="Concluída">Concluídas</option>
+          </select>
+        </div>
+      </div>
+
+      <p id="mensagem-vazio" class="mensagem-vazio" hidden>
+        Nenhuma tarefa por aqui ainda. Cadastre a primeira acima!
+      </p>
+
+      <ul id="lista-tarefas" class="lista-tarefas"></ul>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
