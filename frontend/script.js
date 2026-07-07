@@ -5,18 +5,23 @@ const URL_API = "http://127.0.0.1:5000/tarefas";
 const formulario = document.getElementById("form-tarefa");
 const campoTitulo = document.getElementById("titulo");
 const campoDescricao = document.getElementById("descricao");
+const campoPrioridade = document.getElementById("prioridade");
+const campoDataVencimento = document.getElementById("data-vencimento");
 const listaTarefas = document.getElementById("lista-tarefas");
 const mensagemVazio = document.getElementById("mensagem-vazio");
 const filtroStatus = document.getElementById("filtro-status");
+const ordenarPor = document.getElementById("ordenar-por");
 
 // Guarda a última lista de tarefas recebida da API, para poder filtrar
 // sem precisar buscar tudo de novo no servidor a cada troca de filtro.
 let tarefasAtuais = [];
 
-// Busca as tarefas na API e atualiza a tela
+// Busca as tarefas na API (já ordenadas, se selecionado) e atualiza a tela
 async function buscarTarefas() {
   try {
-    const resposta = await fetch(URL_API);
+    const ordenacao = ordenarPor.value;
+    const url = ordenacao === "cadastro" ? URL_API : `${URL_API}?ordenar_por=${ordenacao}`;
+    const resposta = await fetch(url);
     tarefasAtuais = await resposta.json();
     renderizarTarefas();
   } catch (erro) {
@@ -50,6 +55,7 @@ function renderizarTarefas() {
 // Cria o elemento <li> correspondente a uma tarefa
 function criarElementoTarefa(tarefa) {
   const estaConcluida = tarefa.status === "Concluída";
+  const prioridade = tarefa.prioridade || "Média";
 
   const item = document.createElement("li");
   item.className = "tarefa" + (estaConcluida ? " concluida" : "");
@@ -58,9 +64,15 @@ function criarElementoTarefa(tarefa) {
     <div class="tarefa-info">
       <p class="tarefa-titulo">${escaparHtml(tarefa.titulo)}</p>
       ${tarefa.descricao ? `<p class="tarefa-descricao">${escaparHtml(tarefa.descricao)}</p>` : ""}
-      <span class="tarefa-status ${estaConcluida ? "concluida" : "pendente"}">
-        ${tarefa.status}
-      </span>
+      <div class="tarefa-tags">
+        <span class="tarefa-status ${estaConcluida ? "concluida" : "pendente"}">
+          ${tarefa.status}
+        </span>
+        <span class="tarefa-prioridade prioridade-${prioridade}">
+          ${prioridade}
+        </span>
+        ${tarefa.data_vencimento ? `<span class="tarefa-vencimento">${formatarData(tarefa.data_vencimento)}</span>` : ""}
+      </div>
     </div>
     <div class="tarefa-acoes">
       <button class="botao-icone editar" data-id="${tarefa.id}">
@@ -90,10 +102,17 @@ function criarElementoTarefa(tarefa) {
   return item;
 }
 
-// Cria o <li> em modo de edição (título e descrição editáveis)
+// Formata data AAAA-MM-DD para DD/MM/AAAA (mais natural para o usuário brasileiro)
+function formatarData(dataISO) {
+  const [ano, mes, dia] = dataISO.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+// Cria o <li> em modo de edição (título, descrição, prioridade e vencimento editáveis)
 function criarElementoEdicao(tarefa) {
   const item = document.createElement("li");
   item.className = "tarefa tarefa-edicao";
+  const prioridadeAtual = tarefa.prioridade || "Média";
 
   item.innerHTML = `
     <div class="tarefa-info">
@@ -105,6 +124,20 @@ function criarElementoEdicao(tarefa) {
         <label>Descrição</label>
         <textarea class="editar-descricao" rows="2" maxlength="300">${escaparHtml(tarefa.descricao || "")}</textarea>
       </div>
+      <div class="campo-linha">
+        <div class="campo">
+          <label>Prioridade</label>
+          <select class="editar-prioridade">
+            <option value="Baixa" ${prioridadeAtual === "Baixa" ? "selected" : ""}>Baixa</option>
+            <option value="Média" ${prioridadeAtual === "Média" ? "selected" : ""}>Média</option>
+            <option value="Alta" ${prioridadeAtual === "Alta" ? "selected" : ""}>Alta</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Vencimento</label>
+          <input type="date" class="editar-vencimento" value="${tarefa.data_vencimento || ""}" />
+        </div>
+      </div>
     </div>
     <div class="tarefa-acoes">
       <button class="botao-icone salvar" data-id="${tarefa.id}">Salvar</button>
@@ -114,6 +147,8 @@ function criarElementoEdicao(tarefa) {
 
   const campoTituloEdicao = item.querySelector(".editar-titulo");
   const campoDescricaoEdicao = item.querySelector(".editar-descricao");
+  const campoPrioridadeEdicao = item.querySelector(".editar-prioridade");
+  const campoVencimentoEdicao = item.querySelector(".editar-vencimento");
 
   item.querySelector(".salvar").addEventListener("click", () => {
     const novoTitulo = campoTituloEdicao.value.trim();
@@ -123,7 +158,13 @@ function criarElementoEdicao(tarefa) {
       return;
     }
 
-    editarTarefa(tarefa.id, novoTitulo, campoDescricaoEdicao.value.trim());
+    editarTarefa(
+      tarefa.id,
+      novoTitulo,
+      campoDescricaoEdicao.value.trim(),
+      campoPrioridadeEdicao.value,
+      campoVencimentoEdicao.value || null
+    );
   });
 
   item.querySelector(".cancelar").addEventListener("click", () => {
@@ -141,12 +182,12 @@ function escaparHtml(texto) {
 }
 
 // Envia uma nova tarefa para a API
-async function criarTarefa(titulo, descricao) {
+async function criarTarefa(titulo, descricao, prioridade, dataVencimento) {
   try {
     await fetch(URL_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titulo, descricao }),
+      body: JSON.stringify({ titulo, descricao, prioridade, data_vencimento: dataVencimento }),
     });
     await buscarTarefas();
   } catch (erro) {
@@ -168,13 +209,13 @@ async function alternarStatus(id, novoStatus) {
   }
 }
 
-// Salva a edição de título/descrição de uma tarefa existente
-async function editarTarefa(id, titulo, descricao) {
+// Salva a edição de título/descrição/prioridade/vencimento de uma tarefa existente
+async function editarTarefa(id, titulo, descricao, prioridade, dataVencimento) {
   try {
     await fetch(`${URL_API}/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titulo, descricao }),
+      body: JSON.stringify({ titulo, descricao, prioridade, data_vencimento: dataVencimento }),
     });
     await buscarTarefas();
   } catch (erro) {
@@ -198,17 +239,22 @@ formulario.addEventListener("submit", (evento) => {
 
   const titulo = campoTitulo.value.trim();
   const descricao = campoDescricao.value.trim();
+  const prioridade = campoPrioridade.value;
+  const dataVencimento = campoDataVencimento.value || null;
 
   if (!titulo) return;
 
-  criarTarefa(titulo, descricao);
+  criarTarefa(titulo, descricao, prioridade, dataVencimento);
 
   formulario.reset();
   campoTitulo.focus();
 });
 
-// Troca de filtro
+// Troca de filtro (não precisa buscar de novo, só re-renderiza)
 filtroStatus.addEventListener("change", renderizarTarefas);
+
+// Troca de ordenação (precisa buscar de novo, pois quem ordena é o back-end)
+ordenarPor.addEventListener("change", buscarTarefas);
 
 // Carrega as tarefas assim que a página abre
 buscarTarefas();
