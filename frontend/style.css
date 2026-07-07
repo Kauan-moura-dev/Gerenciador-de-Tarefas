@@ -1,14 +1,22 @@
 :root {
-  --cor-fundo: #f4f5f7;
-  --cor-card: #ffffff;
-  --cor-texto: #22292f;
-  --cor-texto-suave: #6b7280;
-  --cor-primaria: #3b5bdb;
-  --cor-primaria-hover: #2f4cc7;
-  --cor-concluida: #2f9e44;
-  --cor-perigo: #e03131;
-  --cor-borda: #e5e7eb;
+  /* Paleta inspirada na identidade da XCL: fundo quase-preto (#0E0E10,
+     confirmado no theme-color oficial do site) com um dourado acinzentado
+     como destaque único — remete a "profundidade forjada" e ao tom
+     sóbrio/enterprise do texto do site, evitando o clichê do verde-neon
+     em fundo escuro. */
+  --cor-fundo: #0E0E10;
+  --cor-card: #17171B;
+  --cor-card-hover: #1D1D22;
+  --cor-texto: #F2F1ED;
+  --cor-texto-suave: #9A9AA3;
+  --cor-primaria: #C9A227;
+  --cor-primaria-hover: #E0B62E;
+  --cor-concluida: #3FBF7F;
+  --cor-perigo: #E5484D;
+  --cor-borda: #29292F;
   --raio: 10px;
+  --fonte-titulo: "Space Grotesk", "Segoe UI", sans-serif;
+  --fonte-texto: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 * {
@@ -17,7 +25,7 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--fonte-texto);
   background-color: var(--cor-fundo);
   color: var(--cor-texto);
 }
@@ -30,17 +38,30 @@ body {
 
 .cabecalho {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cor-primaria);
 }
 
 .cabecalho h1 {
-  margin: 0 0 4px;
-  font-size: 1.8rem;
+  margin: 0 0 6px;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
 }
 
 .subtitulo {
   margin: 0;
   color: var(--cor-texto-suave);
+  font-style: italic;
 }
 
 .card {
@@ -53,7 +74,10 @@ body {
 
 .card h2 {
   margin-top: 0;
-  font-size: 1.1rem;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
 }
 
 .campo {
@@ -78,6 +102,13 @@ body {
   font-size: 0.95rem;
   font-family: inherit;
   resize: vertical;
+  background-color: #0E0E10;
+  color: var(--cor-texto);
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: #5B5B62;
 }
 
 .campo input:focus,
@@ -99,7 +130,7 @@ body {
 
 .botao-primario {
   background-color: var(--cor-primaria);
-  color: white;
+  color: #17130A;
   width: 100%;
 }
 
@@ -118,14 +149,18 @@ body {
 .filtro {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 0.9rem;
+  color: var(--cor-texto-suave);
 }
 
 .filtro select {
   padding: 6px 10px;
   border-radius: 8px;
   border: 1px solid var(--cor-borda);
+  background-color: #0E0E10;
+  color: var(--cor-texto);
 }
 
 .mensagem-vazio {
@@ -151,11 +186,12 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
+  background-color: var(--cor-card-hover);
 }
 
 .tarefa.concluida {
-  background-color: #f4faf3;
-  border-color: #cdeecf;
+  background-color: #14201A;
+  border-color: #1F3D2C;
 }
 
 .tarefa-info {
@@ -180,7 +216,7 @@ body {
 
 .tarefa-status {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
@@ -189,13 +225,13 @@ body {
 }
 
 .tarefa-status.pendente {
-  background-color: #fff3bf;
-  color: #7d5a00;
+  background-color: rgba(201, 162, 39, 0.16);
+  color: #E0B62E;
 }
 
 .tarefa-status.concluida {
-  background-color: #d3f9d8;
-  color: #2b8a3e;
+  background-color: rgba(63, 191, 127, 0.16);
+  color: #4FD692;
 }
 
 .tarefa-tags {
@@ -208,7 +244,7 @@ body {
 
 .tarefa-prioridade {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
@@ -217,22 +253,22 @@ body {
 }
 
 .prioridade-Alta {
-  background-color: #ffe3e3;
-  color: #c92a2a;
+  background-color: rgba(229, 72, 77, 0.16);
+  color: #F27E82;
 }
 
 .prioridade-Média {
-  background-color: #fff3bf;
-  color: #7d5a00;
+  background-color: rgba(201, 162, 39, 0.16);
+  color: #E0B62E;
 }
 
 .prioridade-Baixa {
-  background-color: #e7f5ff;
-  color: #1864ab;
+  background-color: rgba(122, 162, 255, 0.16);
+  color: #8FB4FF;
 }
 
 .tarefa-vencimento {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--cor-texto-suave);
   border: 1px solid var(--cor-borda);
   border-radius: 999px;
@@ -256,7 +292,8 @@ body {
 
 .botao-icone {
   border: 1px solid var(--cor-borda);
-  background-color: white;
+  background-color: transparent;
+  color: var(--cor-texto);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 0.8rem;
@@ -265,23 +302,27 @@ body {
 }
 
 .botao-icone.concluir {
-  color: var(--cor-concluida);
-  border-color: #b2f2bb;
+  color: #4FD692;
+  border-color: rgba(63, 191, 127, 0.4);
 }
 
 .botao-icone.excluir {
-  color: var(--cor-perigo);
-  border-color: #ffc9c9;
+  color: #F27E82;
+  border-color: rgba(229, 72, 77, 0.4);
 }
 
 .botao-icone.editar {
   color: var(--cor-primaria);
-  border-color: #bac8ff;
+  border-color: rgba(201, 162, 39, 0.4);
 }
 
 .botao-icone.salvar {
-  color: var(--cor-concluida);
-  border-color: #b2f2bb;
+  color: #4FD692;
+  border-color: rgba(63, 191, 127, 0.4);
+}
+
+.botao-icone:hover {
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .tarefa-edicao .campo {
@@ -301,10 +342,8 @@ body {
   border-radius: 6px;
   font-size: 0.9rem;
   font-family: inherit;
-}
-
-.botao-icone:hover {
-  filter: brightness(0.96);
+  background-color: #0E0E10;
+  color: var(--cor-texto);
 }
 
 @media (max-width: 480px) {
@@ -319,5 +358,10 @@ body {
 
   .botao-icone {
     flex: 1;
+  }
+
+  .campo-linha {
+    flex-direction: column;
+    gap: 0;
   }
 }
