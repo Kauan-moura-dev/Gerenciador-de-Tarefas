@@ -68,21 +68,34 @@ def criar_tarefa():
 
     return jsonify(nova_tarefa), 201
 
-
 @app.route("/tarefas/<int:tarefa_id>", methods=["PATCH"])
-def alterar_status(tarefa_id):
-    """Alterna ou define o status de uma tarefa (Pendente/Concluída)."""
+def atualizar_tarefa(tarefa_id):
+    """Atualiza uma tarefa existente.
+
+    Aceita, de forma independente:
+    - status: define ou alterna Pendente/Concluída
+    - titulo: novo título (não pode ser vazio)
+    - descricao: nova descrição
+    """
     dados = request.get_json() or {}
     tarefas = carregar_tarefas()
 
     for tarefa in tarefas:
         if tarefa["id"] == tarefa_id:
-            novo_status = dados.get("status")
+            if "titulo" in dados:
+                novo_titulo = dados.get("titulo", "").strip()
+                if not novo_titulo:
+                    return jsonify({"erro": "O campo 'titulo' não pode ficar vazio."}), 400
+                tarefa["titulo"] = novo_titulo
 
-            if novo_status in ("Pendente", "Concluída"):
-                tarefa["status"] = novo_status
-            else:
-                # se não vier um status específico, apenas alterna o atual
+            if "descricao" in dados:
+                tarefa["descricao"] = dados.get("descricao", "")
+
+            if "status" in dados:
+                novo_status = dados.get("status")
+                if novo_status in ("Pendente", "Concluída"):
+                    tarefa["status"] = novo_status
+            elif len(dados) == 0:
                 tarefa["status"] = (
                     "Concluída" if tarefa["status"] == "Pendente" else "Pendente"
                 )
@@ -91,7 +104,6 @@ def alterar_status(tarefa_id):
             return jsonify(tarefa), 200
 
     return jsonify({"erro": "Tarefa não encontrada."}), 404
-
 
 @app.route("/tarefas/<int:tarefa_id>", methods=["DELETE"])
 def excluir_tarefa(tarefa_id):
