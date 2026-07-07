@@ -222,6 +222,34 @@ body {
   border-color: #ffc9c9;
 }
 
+.botao-icone.editar {
+  color: var(--cor-primaria);
+  border-color: #bac8ff;
+}
+
+.botao-icone.salvar {
+  color: var(--cor-concluida);
+  border-color: #b2f2bb;
+}
+
+.tarefa-edicao .campo {
+  margin-bottom: 8px;
+}
+
+.tarefa-edicao .campo label {
+  font-size: 0.75rem;
+}
+
+.tarefa-edicao input,
+.tarefa-edicao textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
 .botao-icone:hover {
   filter: brightness(0.96);
 }
