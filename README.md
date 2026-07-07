@@ -11,11 +11,14 @@ Aplicação web simples para cadastrar e acompanhar tarefas do dia a dia, desenv
 
 **Front-end**
 - HTML5
-- CSS3
+- CSS3 (tema escuro inspirado na identidade visual da XCL, com Google Fonts Space Grotesk + Inter)
 - JavaScript (puro, sem frameworks)
 
 **Armazenamento**
 - Arquivo JSON (`backend/tasks.json`), conforme permitido no desafio
+
+**Testes**
+- Pytest (testes automatizados das rotas da API)
 
 ## Arquitetura da solução
 
@@ -24,9 +27,12 @@ O projeto segue uma arquitetura separada entre front-end e back-end, que se comu
 ```
 gerenciador-tarefas/
 ├── backend/
-│   ├── app.py            -> API Flask (rotas do CRUD)
-│   ├── tasks.json         -> "banco de dados" em arquivo JSON
-│   └── requirements.txt   -> dependências do back-end
+│   ├── app.py                -> API Flask (rotas do CRUD)
+│   ├── tasks.json            -> "banco de dados" em arquivo JSON
+│   ├── requirements.txt      -> dependências de produção
+│   ├── requirements-dev.txt  -> dependências de desenvolvimento (pytest)
+│   └── tests/
+│       └── test_app.py       -> testes automatizados das rotas da API
 │
 └── frontend/
     ├── index.html          -> estrutura da página
@@ -84,6 +90,16 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 
 > É necessário manter o back-end rodando enquanto usa o front-end, pois o front consome a API para listar, criar, alterar e excluir tarefas.
 
+### 3. Testes automatizados (opcional)
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest tests/ -v
+```
+
+Os testes cobrem todas as rotas da API (criação, listagem, edição, exclusão, ordenação e validações) e usam um arquivo de dados temporário, sem interferir no `tasks.json` real.
+
 ## Funcionalidades
 
 - Cadastrar tarefa (título, descrição, prioridade e data de vencimento opcionais)
@@ -94,6 +110,7 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 - Filtrar tarefas por status (Todas / Pendentes / Concluídas)
 - Ordenar tarefas por prioridade ou por data de vencimento
 - Layout responsivo (adaptado para telas menores)
+- Testes automatizados cobrindo todas as rotas da API (12 testes com Pytest)
 
 ## Principais decisões tomadas durante o desenvolvimento
 
@@ -105,13 +122,15 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 - **Edição parcial (PATCH):** a rota de edição aceita atualizar título, descrição, status, prioridade e data de vencimento de forma independente — o cliente envia só o que quer alterar, sem precisar reenviar a tarefa inteira. Isso manteve compatibilidade com o comportamento já existente de alternar status automaticamente quando nenhum campo é enviado.
 - **Prioridade e data de vencimento:** adicionei esses dois campos após comparar a aplicação com gerenciadores de tarefas do mercado (Todoist, Trello, Microsoft To Do), nos quais eles são recursos centrais. Optei por manter apenas 3 níveis de prioridade (Baixa/Média/Alta) e uma data opcional, evitando recursos mais complexos (categorias, subtarefas, colaboração) que fugiriam do escopo do desafio.
 - **Ordenação no back-end:** a ordenação por prioridade e por data de vencimento é feita na API (`?ordenar_por=`), e não no front-end, para manter a regra de negócio centralizada no back-end.
+- **Identidade visual XCL:** redesenhei o front-end com um tema escuro inspirado na identidade visual da própria XCL (fundo próximo de preto, tipografia Space Grotesk/Inter e um único tom de destaque), em vez de manter um layout genérico.
+- **Testes automatizados isolados:** os testes usam um arquivo `tasks.json` temporário, trocado apenas durante a execução dos testes, para não sobrescrever os dados reais da aplicação nem exigir um banco de dados dedicado a testes.
 
 ## Possíveis melhorias futuras
 
 - Migrar o armazenamento de JSON para um banco de dados relacional (SQLite/PostgreSQL)
-- Adicionar testes automatizados para as rotas da API
 - Adicionar autenticação de usuários
 - Deploy da aplicação (back-end e front-end) em serviço de nuvem
+- Containerizar a aplicação com Docker
 
 ---
 
