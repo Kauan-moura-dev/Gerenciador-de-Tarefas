@@ -28,6 +28,22 @@
           <textarea id="descricao" placeholder="Detalhes da tarefa (opcional)"></textarea>
         </div>
 
+        <div class="campo-linha">
+          <div class="campo">
+            <label for="prioridade">Prioridade</label>
+            <select id="prioridade">
+              <option value="Baixa">Baixa</option>
+              <option value="Média" selected>Média</option>
+              <option value="Alta">Alta</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="data-vencimento">Vencimento (opcional)</label>
+            <input type="date" id="data-vencimento" />
+          </div>
+        </div>
+
         <button type="submit" class="botao botao-primario">Adicionar tarefa</button>
       </form>
     </section>
@@ -43,6 +59,13 @@
             <option value="todas">Todas</option>
             <option value="Pendente">Pendentes</option>
             <option value="Concluída">Concluídas</option>
+          </select>
+
+          <label for="ordenar-por">Ordenar:</label>
+          <select id="ordenar-por">
+            <option value="cadastro">Mais recentes</option>
+            <option value="prioridade">Prioridade</option>
+            <option value="data_vencimento">Data de vencimento</option>
           </select>
         </div>
       </div>
