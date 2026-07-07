@@ -63,6 +63,9 @@ function criarElementoTarefa(tarefa) {
       </span>
     </div>
     <div class="tarefa-acoes">
+      <button class="botao-icone editar" data-id="${tarefa.id}">
+        Editar
+      </button>
       <button class="botao-icone concluir" data-id="${tarefa.id}">
         ${estaConcluida ? "Reabrir" : "Concluir"}
       </button>
@@ -72,14 +75,59 @@ function criarElementoTarefa(tarefa) {
     </div>
   `;
 
-  // Evento do botão de concluir/reabrir
   item.querySelector(".concluir").addEventListener("click", () => {
     alternarStatus(tarefa.id, estaConcluida ? "Pendente" : "Concluída");
   });
 
-  // Evento do botão de excluir
   item.querySelector(".excluir").addEventListener("click", () => {
     excluirTarefa(tarefa.id);
+  });
+
+  item.querySelector(".editar").addEventListener("click", () => {
+    item.replaceWith(criarElementoEdicao(tarefa));
+  });
+
+  return item;
+}
+
+// Cria o <li> em modo de edição (título e descrição editáveis)
+function criarElementoEdicao(tarefa) {
+  const item = document.createElement("li");
+  item.className = "tarefa tarefa-edicao";
+
+  item.innerHTML = `
+    <div class="tarefa-info">
+      <div class="campo">
+        <label>Título</label>
+        <input type="text" class="editar-titulo" value="${escaparHtml(tarefa.titulo)}" maxlength="100" />
+      </div>
+      <div class="campo">
+        <label>Descrição</label>
+        <textarea class="editar-descricao" rows="2" maxlength="300">${escaparHtml(tarefa.descricao || "")}</textarea>
+      </div>
+    </div>
+    <div class="tarefa-acoes">
+      <button class="botao-icone salvar" data-id="${tarefa.id}">Salvar</button>
+      <button class="botao-icone cancelar" data-id="${tarefa.id}">Cancelar</button>
+    </div>
+  `;
+
+  const campoTituloEdicao = item.querySelector(".editar-titulo");
+  const campoDescricaoEdicao = item.querySelector(".editar-descricao");
+
+  item.querySelector(".salvar").addEventListener("click", () => {
+    const novoTitulo = campoTituloEdicao.value.trim();
+
+    if (!novoTitulo) {
+      campoTituloEdicao.focus();
+      return;
+    }
+
+    editarTarefa(tarefa.id, novoTitulo, campoDescricaoEdicao.value.trim());
+  });
+
+  item.querySelector(".cancelar").addEventListener("click", () => {
+    item.replaceWith(criarElementoTarefa(tarefa));
   });
 
   return item;
@@ -117,6 +165,20 @@ async function alternarStatus(id, novoStatus) {
     await buscarTarefas();
   } catch (erro) {
     console.error("Erro ao alterar status:", erro);
+  }
+}
+
+// Salva a edição de título/descrição de uma tarefa existente
+async function editarTarefa(id, titulo, descricao) {
+  try {
+    await fetch(`${URL_API}/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titulo, descricao }),
+    });
+    await buscarTarefas();
+  } catch (erro) {
+    console.error("Erro ao editar tarefa:", erro);
   }
 }
 
