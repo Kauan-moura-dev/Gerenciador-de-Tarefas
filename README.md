@@ -44,7 +44,7 @@ gerenciador-tarefas/
 |--------|-----------------|-----------------------------------|
 | GET    | /tarefas        | Lista todas as tarefas            |
 | POST   | /tarefas        | Cria uma nova tarefa              |
-| PATCH  | /tarefas/\<id\>  | Altera o status de uma tarefa     |
+| PATCH  | /tarefas/\<id\>  | Altera o status, título e/ou descrição de uma tarefa |
 | DELETE | /tarefas/\<id\>  | Exclui uma tarefa                 |
 
 **Exemplo de tarefa (JSON):**
@@ -86,6 +86,7 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 
 - Cadastrar tarefa (título e descrição)
 - Listar todas as tarefas
+- Editar título e descrição de uma tarefa já cadastrada
 - Alterar status entre Pendente e Concluída
 - Excluir tarefa
 - Filtrar tarefas por status (Todas / Pendentes / Concluídas)
@@ -97,12 +98,12 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 - **Flask no back-end:** escolhido por ser um framework leve e direto, adequado ao escopo do projeto sem adicionar complexidade desnecessária.
 - **JavaScript puro no front-end:** evitei frameworks (como React) para manter o projeto simples de entender e explicar, já que o requisito era apenas separar front-end e back-end, sem exigir uma tecnologia específica.
 - **Flask-CORS:** necessário porque front-end e back-end rodam em portas diferentes durante o desenvolvimento local.
-- **Validação básica:** o campo "título" é obrigatório tanto no front-end (atributo `required`) quanto no back-end (validação na rota de criação), evitando cadastro de tarefas sem título mesmo em requisições feitas diretamente à API.
+- **Validação básica:** o campo "título" é obrigatório tanto no front-end (atributo `required`) quanto no back-end (validação na rota de criação e na de edição), evitando cadastro ou edição de tarefas sem título mesmo em requisições feitas diretamente à API.
+- **Edição parcial (PATCH):** a rota de edição aceita atualizar título, descrição e status de forma independente — o cliente envia só o que quer alterar, sem precisar reenviar a tarefa inteira. Isso manteve compatibilidade com o comportamento já existente de alternar status automaticamente quando nenhum campo é enviado.
 
 ## Possíveis melhorias futuras
 
 - Migrar o armazenamento de JSON para um banco de dados relacional (SQLite/PostgreSQL)
-- Adicionar edição do título/descrição de uma tarefa já criada
 - Adicionar testes automatizados para as rotas da API
 - Adicionar autenticação de usuários
 - Deploy da aplicação (back-end e front-end) em serviço de nuvem
