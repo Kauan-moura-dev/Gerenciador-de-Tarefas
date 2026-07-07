@@ -42,9 +42,9 @@ gerenciador-tarefas/
 
 | Método | Rota            | Descrição                        |
 |--------|-----------------|-----------------------------------|
-| GET    | /tarefas        | Lista todas as tarefas            |
+| GET    | /tarefas        | Lista todas as tarefas (aceita `?ordenar_por=prioridade` ou `?ordenar_por=data_vencimento`) |
 | POST   | /tarefas        | Cria uma nova tarefa              |
-| PATCH  | /tarefas/\<id\>  | Altera o status, título e/ou descrição de uma tarefa |
+| PATCH  | /tarefas/\<id\>  | Altera status, título, descrição, prioridade e/ou data de vencimento |
 | DELETE | /tarefas/\<id\>  | Exclui uma tarefa                 |
 
 **Exemplo de tarefa (JSON):**
@@ -53,7 +53,9 @@ gerenciador-tarefas/
   "id": 1,
   "titulo": "Estudar para o desafio XCL",
   "descricao": "Rever Flask e JS",
-  "status": "Pendente"
+  "status": "Pendente",
+  "prioridade": "Alta",
+  "data_vencimento": "2026-07-08"
 }
 ```
 
@@ -84,12 +86,13 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 
 ## Funcionalidades
 
-- Cadastrar tarefa (título e descrição)
+- Cadastrar tarefa (título, descrição, prioridade e data de vencimento opcionais)
 - Listar todas as tarefas
-- Editar título e descrição de uma tarefa já cadastrada
+- Editar título, descrição, prioridade e data de vencimento de uma tarefa já cadastrada
 - Alterar status entre Pendente e Concluída
 - Excluir tarefa
 - Filtrar tarefas por status (Todas / Pendentes / Concluídas)
+- Ordenar tarefas por prioridade ou por data de vencimento
 - Layout responsivo (adaptado para telas menores)
 
 ## Principais decisões tomadas durante o desenvolvimento
@@ -99,7 +102,9 @@ Depois, acesse `http://127.0.0.1:8080` no navegador.
 - **JavaScript puro no front-end:** evitei frameworks (como React) para manter o projeto simples de entender e explicar, já que o requisito era apenas separar front-end e back-end, sem exigir uma tecnologia específica.
 - **Flask-CORS:** necessário porque front-end e back-end rodam em portas diferentes durante o desenvolvimento local.
 - **Validação básica:** o campo "título" é obrigatório tanto no front-end (atributo `required`) quanto no back-end (validação na rota de criação e na de edição), evitando cadastro ou edição de tarefas sem título mesmo em requisições feitas diretamente à API.
-- **Edição parcial (PATCH):** a rota de edição aceita atualizar título, descrição e status de forma independente — o cliente envia só o que quer alterar, sem precisar reenviar a tarefa inteira. Isso manteve compatibilidade com o comportamento já existente de alternar status automaticamente quando nenhum campo é enviado.
+- **Edição parcial (PATCH):** a rota de edição aceita atualizar título, descrição, status, prioridade e data de vencimento de forma independente — o cliente envia só o que quer alterar, sem precisar reenviar a tarefa inteira. Isso manteve compatibilidade com o comportamento já existente de alternar status automaticamente quando nenhum campo é enviado.
+- **Prioridade e data de vencimento:** adicionei esses dois campos após comparar a aplicação com gerenciadores de tarefas do mercado (Todoist, Trello, Microsoft To Do), nos quais eles são recursos centrais. Optei por manter apenas 3 níveis de prioridade (Baixa/Média/Alta) e uma data opcional, evitando recursos mais complexos (categorias, subtarefas, colaboração) que fugiriam do escopo do desafio.
+- **Ordenação no back-end:** a ordenação por prioridade e por data de vencimento é feita na API (`?ordenar_por=`), e não no front-end, para manter a regra de negócio centralizada no back-end.
 
 ## Possíveis melhorias futuras
 
