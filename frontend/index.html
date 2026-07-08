@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciador de Tarefas - XCL</title>
+  <link rel="icon" href="assets/xcl.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       Tela de autenticação (login / criar conta)
+       ============================================================ -->
+  <div id="tela-auth" class="tela-auth" hidden>
+    <div class="card card-auth">
+      <header class="cabecalho">
+        <div class="marca">
+          <img src="assets/xcl.svg" alt="Logo XCL" class="logo-xcl" />
+          <h1>Gerenciador de Tarefas <em>— XCL</em></h1>
+        </div>
+        <p class="subtitulo">Organize suas entregas do dia a dia</p>
+        <p class="slogan">tools don't deliver. we do.</p>
+      </header>
+
+      <div class="abas-auth" role="tablist" aria-label="Entrar ou criar conta">
+        <button type="button" id="aba-login" class="aba ativa" role="tab" aria-selected="true">Entrar</button>
+        <button type="button" id="aba-registro" class="aba" role="tab" aria-selected="false">Criar conta</button>
+      </div>
+
+      <form id="form-login">
+        <div class="campo">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" autocomplete="email" required />
+        </div>
+        <div class="campo">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="botao botao-primario">Entrar</button>
+      </form>
+
+      <form id="form-registro" hidden>
+        <div class="campo">
+          <label for="registro-nome">Nome</label>
+          <input type="text" id="registro-nome" autocomplete="name" required />
+        </div>
+        <div class="campo">
+          <label for="registro-email">E-mail</label>
+          <input type="email" id="registro-email" autocomplete="email" required />
+        </div>
+        <div class="campo">
+          <label for="registro-senha">Senha (mínimo 6 caracteres)</label>
+          <input type="password" id="registro-senha" autocomplete="new-password" minlength="6" required />
+        </div>
+        <button type="submit" class="botao botao-primario">Criar conta</button>
+      </form>
+
+      <p id="erro-auth" class="erro-auth" role="alert" hidden></p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Aplicação (visível apenas com sessão ativa)
+       ============================================================ -->
+  <div id="tela-app" class="container" hidden>
+    <header class="cabecalho cabecalho-app">
+      <div>
+        <div class="marca">
+          <img src="assets/xcl.svg" alt="Logo XCL" class="logo-xcl" />
+          <h1>Gerenciador de Tarefas <em>— XCL</em></h1>
+        </div>
+        <p class="subtitulo">Organize seu dia a dia</p>
+      </div>
+      <div class="usuario-area">
+        <span id="nome-usuario" class="nome-usuario"></span>
+        <button type="button" id="botao-sair" class="botao botao-discreto">Sair</button>
+      </div>
+    </header>
+
+    <!-- Quadros (boards) -->
+    <section class="barra-quadros" aria-label="Quadros de tarefas">
+      <span class="quadros-rotulo">Quadro</span>
+      <select id="seletor-quadro" aria-label="Selecionar quadro"></select>
+      <button type="button" id="novo-quadro" class="botao-icone" title="Criar um novo quadro">＋ Novo</button>
+      <button type="button" id="renomear-quadro" class="botao-icone" title="Renomear este quadro">Renomear</button>
+      <button type="button" id="excluir-quadro" class="botao-icone excluir" title="Excluir este quadro e as tarefas dele">Excluir</button>
+    </section>
+
+    <!-- Resumo -->
+    <section class="resumo" aria-label="Resumo das tarefas">
+      <div class="resumo-item" title="Tarefas com status Pendente (inclui as que já venceram)">
+        <span id="contador-pendentes" class="resumo-numero">0</span>
+        <span class="resumo-rotulo">Pendentes</span>
+      </div>
+      <div class="resumo-item resumo-andamento" title="Tarefas com status Em andamento">
+        <span id="contador-andamento" class="resumo-numero">0</span>
+        <span class="resumo-rotulo">Em andamento</span>
+      </div>
+      <div class="resumo-item resumo-vencidas" title="Tarefas não concluídas com vencimento antes de hoje (independe do status)">
+        <span id="contador-vencidas" class="resumo-numero">0</span>
+        <span class="resumo-rotulo">Vencidas</span>
+      </div>
+      <div class="resumo-item resumo-concluidas" title="Tarefas com status Concluída">
+        <span id="contador-concluidas" class="resumo-numero">0</span>
+        <span class="resumo-rotulo">Concluídas</span>
+      </div>
+      <div class="resumo-item resumo-ciclo" title="Tempo médio entre criar e concluir uma tarefa">
+        <span id="contador-ciclo" class="resumo-numero">—</span>
+        <span class="resumo-rotulo">Ciclo médio</span>
+      </div>
+    </section>
+
+    <!-- Layout em duas colunas no desktop: formulário + conteúdo -->
+    <div class="layout-principal">
+    <div class="coluna-lateral">
+    <!-- Formulário de cadastro -->
+    <section class="card">
+      <h2>Nova tarefa</h2>
+      <form id="form-tarefa">
+        <div class="campo">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" placeholder="Ex: Estudar para a prova" maxlength="200" required />
+        </div>
+
+        <div class="campo">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" placeholder="Detalhes da tarefa (opcional)" maxlength="2000"></textarea>
+        </div>
+
+        <div class="linha-campos">
+          <div class="campo">
+            <label for="data-inicio">Início</label>
+            <input type="date" id="data-inicio" />
+          </div>
+          <div class="campo">
+            <label for="data-vencimento">Vencimento</label>
+            <input type="date" id="data-vencimento" />
+          </div>
+          <div class="campo">
+            <label for="prioridade">Prioridade</label>
+            <select id="prioridade">
+              <option value="Alta">Alta</option>
+              <option value="Média" selected>Média</option>
+              <option value="Baixa">Baixa</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="categoria">Categoria</label>
+            <input type="text" id="categoria" list="lista-categorias" placeholder="Ex: Estudos, Faculdade" maxlength="100" />
+            <datalist id="lista-categorias"></datalist>
+          </div>
+          <div class="campo">
+            <label for="recorrencia">Repetir</label>
+            <select id="recorrencia">
+              <option value="nenhuma" selected>Não repetir</option>
+              <option value="diaria">Todo dia</option>
+              <option value="semanal">Toda semana</option>
+              <option value="mensal">Todo mês</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset class="grupo-responsavel">
+          <legend>Responsável (opcional)</legend>
+          <div class="linha-campos">
+            <div class="campo">
+              <label for="responsavel-nome">Nome</label>
+              <input type="text" id="responsavel-nome" placeholder="Ex: Marina" maxlength="80" />
+            </div>
+            <div class="campo">
+              <label for="responsavel-sobrenome">Sobrenome</label>
+              <input type="text" id="responsavel-sobrenome" placeholder="Ex: Albuquerque" maxlength="80" />
+            </div>
+            <div class="campo">
+              <label for="responsavel-cargo">Cargo</label>
+              <input type="text" id="responsavel-cargo" placeholder="Ex: Analista" maxlength="80" />
+            </div>
+          </div>
+        </fieldset>
+
+        <p id="dica-sugestao" class="dica-sugestao" hidden>✨ Prioridade e categoria sugeridas automaticamente — ajuste se quiser.</p>
+
+        <button type="submit" id="botao-adicionar" class="botao botao-primario">Adicionar tarefa</button>
+      </form>
+    </section>
+    </div>
+
+    <div class="coluna-conteudo">
+    <!-- Lista de tarefas -->
+    <section class="card">
+      <div class="lista-cabecalho">
+        <h2>Tarefas</h2>
+        <div class="visoes" role="tablist" aria-label="Modo de visualização">
+          <button type="button" class="aba-visao ativa" data-visao="lista" role="tab" aria-selected="true">Lista</button>
+          <button type="button" class="aba-visao" data-visao="kanban" role="tab" aria-selected="false">Kanban</button>
+          <button type="button" class="aba-visao" data-visao="calendario" role="tab" aria-selected="false">Calendário</button>
+          <button type="button" class="aba-visao" data-visao="saude" role="tab" aria-selected="false">💚 Saúde</button>
+        </div>
+      </div>
+
+      <div class="barra-ferramentas">
+        <input type="search" id="busca" class="campo-busca" placeholder="Buscar por título ou descrição..." aria-label="Buscar tarefas" />
+
+        <div class="filtros">
+          <select id="filtro-status" aria-label="Filtrar por status">
+            <option value="todas">Todos os status</option>
+            <option value="Pendente">Pendentes</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Concluída">Concluídas</option>
+          </select>
+
+          <select id="filtro-prioridade" aria-label="Filtrar por prioridade">
+            <option value="todas">Todas as prioridades</option>
+            <option value="Alta">Alta</option>
+            <option value="Média">Média</option>
+            <option value="Baixa">Baixa</option>
+          </select>
+
+          <select id="filtro-categoria" aria-label="Filtrar por categoria">
+            <option value="todas">Todas as categorias</option>
+          </select>
+
+          <select id="ordenacao" aria-label="Ordenar tarefas">
+            <option value="recentes">Mais recentes</option>
+            <option value="vencimento">Data de vencimento</option>
+            <option value="inicio">Data de início</option>
+            <option value="prioridade">Prioridade</option>
+            <option value="alfabetica">A–Z</option>
+          </select>
+        </div>
+
+        <div class="linha-filtros-extra">
+          <div class="filtro-inicio" title="Filtrar pelo período da data de início">
+            <label class="filtro-inicio-rotulo" for="filtro-inicio-de">Início</label>
+            <input type="date" id="filtro-inicio-de" aria-label="Início a partir de" />
+            <span class="filtro-inicio-sep">até</span>
+            <input type="date" id="filtro-inicio-ate" aria-label="Início até" />
+            <button type="button" id="limpar-filtro-inicio" class="filtro-inicio-limpar" title="Limpar o filtro de data de início" hidden>✕</button>
+          </div>
+
+          <div class="filtros-salvos">
+            <button type="button" id="limpar-filtros" class="botao-icone" title="Limpar a busca, todos os filtros e a ordenação">Limpar filtros</button>
+            <select id="filtros-salvos" aria-label="Aplicar um filtro salvo">
+              <option value="">Filtros salvos…</option>
+            </select>
+            <button type="button" id="salvar-filtro" class="botao-icone" title="Salvar a combinação atual de busca e filtros">Salvar filtros</button>
+            <button type="button" id="excluir-filtro" class="botao-icone excluir" title="Excluir o filtro salvo selecionado">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="carregando" class="mensagem-vazio" hidden>Carregando tarefas...</p>
+      <p id="mensagem-vazio" class="mensagem-vazio" hidden></p>
+
+      <!-- Visão: lista -->
+      <ul id="lista-tarefas" class="lista-tarefas" aria-live="polite"></ul>
+
+      <!-- Visão: kanban -->
+      <div id="quadro-kanban" class="quadro-kanban" hidden>
+        <div class="coluna-kanban" data-status="Pendente">
+          <h3>A fazer <span class="coluna-contador" id="kanban-contador-pendente">0</span>
+            <input type="number" class="wip-limite" min="1" max="99" placeholder="∞" title="Limite de WIP desta coluna" aria-label="Limite de WIP da coluna A fazer" /></h3>
+          <ul class="coluna-lista" data-status="Pendente"></ul>
+        </div>
+        <div class="coluna-kanban" data-status="Em andamento">
+          <h3>Em andamento <span class="coluna-contador" id="kanban-contador-andamento">0</span>
+            <input type="number" class="wip-limite" min="1" max="99" placeholder="∞" title="Limite de WIP desta coluna" aria-label="Limite de WIP da coluna Em andamento" /></h3>
+          <ul class="coluna-lista" data-status="Em andamento"></ul>
+        </div>
+        <div class="coluna-kanban" data-status="Concluída">
+          <h3>Concluídas <span class="coluna-contador" id="kanban-contador-concluida">0</span>
+            <input type="number" class="wip-limite" min="1" max="99" placeholder="∞" title="Limite de WIP desta coluna" aria-label="Limite de WIP da coluna Concluídas" /></h3>
+          <ul class="coluna-lista" data-status="Concluída"></ul>
+        </div>
+      </div>
+      <p id="dica-kanban" class="dica-arrastar" hidden>Arraste um cartão entre as colunas para mudar o status. Defina um limite de WIP no campo ∞ — a coluna avisa quando estourar.</p>
+
+      <!-- Visão: calendário -->
+      <div id="calendario" class="calendario" hidden>
+        <div class="calendario-cabecalho">
+          <button type="button" id="mes-anterior" class="botao-icone" aria-label="Mês anterior">‹</button>
+          <span id="calendario-titulo" class="calendario-titulo"></span>
+          <button type="button" id="mes-proximo" class="botao-icone" aria-label="Próximo mês">›</button>
+        </div>
+        <div id="calendario-grade" class="calendario-grade"></div>
+        <p class="calendario-nota">Somente tarefas com data de vencimento aparecem no calendário. Clique em uma tarefa para editá-la.</p>
+      </div>
+
+      <!-- Visão: saúde das tarefas -->
+      <div id="painel-saude" class="painel-saude" hidden></div>
+    </section>
+    </div>
+    </div>
+
+    <footer class="rodape">
+      <strong>XCL</strong> · tools don't deliver. we do.
+    </footer>
+  </div>
+
+  <!-- ============================================================
+       Modal: editar tarefa
+       ============================================================ -->
+  <div id="modal-editar" class="modal-fundo" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-editar" hidden>
+    <div class="modal">
+      <h2 id="titulo-modal-editar">Editar tarefa</h2>
+      <form id="form-editar">
+        <div class="campo">
+          <label for="editar-titulo">Título</label>
+          <input type="text" id="editar-titulo" maxlength="200" required />
+        </div>
+        <div class="campo">
+          <label for="editar-descricao">Descrição</label>
+          <textarea id="editar-descricao" maxlength="2000"></textarea>
+        </div>
+        <div class="linha-campos">
+          <div class="campo">
+            <label for="editar-status">Status</label>
+            <select id="editar-status">
+              <option value="Pendente">Pendente</option>
+              <option value="Em andamento">Em andamento</option>
+              <option value="Concluída">Concluída</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="editar-inicio">Início</label>
+            <input type="date" id="editar-inicio" />
+          </div>
+          <div class="campo">
+            <label for="editar-data">Vencimento</label>
+            <input type="date" id="editar-data" />
+          </div>
+          <div class="campo">
+            <label for="editar-prioridade">Prioridade</label>
+            <select id="editar-prioridade">
+              <option value="Alta">Alta</option>
+              <option value="Média">Média</option>
+              <option value="Baixa">Baixa</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="editar-categoria">Categoria</label>
+            <input type="text" id="editar-categoria" list="lista-categorias" placeholder="Ex: Estudos, Faculdade" maxlength="100" />
+          </div>
+          <div class="campo">
+            <label for="editar-recorrencia">Repetir</label>
+            <select id="editar-recorrencia">
+              <option value="nenhuma">Não repetir</option>
+              <option value="diaria">Todo dia</option>
+              <option value="semanal">Toda semana</option>
+              <option value="mensal">Todo mês</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset class="grupo-responsavel">
+          <legend>Responsável</legend>
+          <div class="linha-campos">
+            <div class="campo">
+              <label for="editar-responsavel-nome">Nome</label>
+              <input type="text" id="editar-responsavel-nome" maxlength="80" />
+            </div>
+            <div class="campo">
+              <label for="editar-responsavel-sobrenome">Sobrenome</label>
+              <input type="text" id="editar-responsavel-sobrenome" maxlength="80" />
+            </div>
+            <div class="campo">
+              <label for="editar-responsavel-cargo">Cargo</label>
+              <input type="text" id="editar-responsavel-cargo" maxlength="80" />
+            </div>
+          </div>
+        </fieldset>
+        <div class="atividade">
+          <h3>Atividade</h3>
+          <ul id="lista-atividade" class="lista-atividade"></ul>
+        </div>
+
+        <div class="modal-acoes">
+          <button type="button" id="cancelar-edicao" class="botao botao-discreto">Cancelar</button>
+          <button type="submit" class="botao botao-primario botao-modal">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Modal: confirmação de exclusão
+       ============================================================ -->
+  <div id="modal-confirmar" class="modal-fundo" role="dialog" aria-modal="true" aria-labelledby="texto-confirmar" hidden>
+    <div class="modal modal-pequeno">
+      <h2>Confirmar exclusão</h2>
+      <p id="texto-confirmar"></p>
+      <div class="modal-acoes">
+        <button type="button" id="cancelar-exclusao" class="botao botao-discreto">Cancelar</button>
+        <button type="button" id="confirmar-exclusao" class="botao botao-perigo">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Chatbot XCL Help (canto inferior direito)
+       ============================================================ -->
+  <div id="chatbot" class="chatbot" hidden>
+    <div id="chatbot-painel" class="chatbot-painel" role="dialog" aria-label="Chat de ajuda XCL Help" hidden>
+      <header class="chatbot-cabecalho">
+        <img src="assets/xcl.svg" alt="" class="chatbot-logo" />
+        <div>
+          <strong>XCL Help</strong>
+          <span class="chatbot-subtitulo">Assistente do organizador</span>
+        </div>
+        <button type="button" id="chatbot-fechar" class="chatbot-fechar" aria-label="Fechar o chat">✕</button>
+      </header>
+      <div id="chatbot-mensagens" class="chatbot-mensagens" aria-live="polite"></div>
+      <div class="chatbot-sugestoes" aria-label="Sugestões de pergunta">
+        <button type="button" class="chatbot-chip">Como está este quadro?</button>
+        <button type="button" class="chatbot-chip">Quantas tarefas atrasadas?</button>
+        <button type="button" class="chatbot-chip">O que é limite de WIP?</button>
+        <button type="button" class="chatbot-chip">Como criar tarefa recorrente?</button>
+      </div>
+      <form id="chatbot-form" class="chatbot-form">
+        <input type="text" id="chatbot-campo" placeholder="Pergunte algo..." maxlength="1000"
+          autocomplete="off" aria-label="Sua mensagem para o XCL Help" required />
+        <button type="submit" class="botao botao-primario chatbot-enviar">Enviar</button>
+      </form>
+    </div>
+    <button type="button" id="chatbot-abrir" class="chatbot-botao" aria-expanded="false"
+      title="Tire dúvidas sobre o organizador e seus quadros">💬 XCL Help</button>
+  </div>
+
+  <!-- Notificações (toasts) -->
+  <div id="area-toasts" class="area-toasts" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

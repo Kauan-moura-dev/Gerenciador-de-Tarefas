@@ -1,0 +1,21 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - ORIGENS_PERMITIDAS=http://localhost:8080,http://127.0.0.1:8080
+      # Opcional: descomente para ativar a sugestão por IA (Claude)
+      # - ANTHROPIC_API_KEY=sua-chave-aqui
+    volumes:
+      - dados:/dados
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  dados:
